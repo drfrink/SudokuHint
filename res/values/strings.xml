@@ -13,9 +13,15 @@
     <string name="button_7">7</string>
     <string name="button_8">8</string>
     <string name="button_9">9</string>
-    <string name="button_0">Blank</string>
+    <string name="button_0"> </string>
     <string name="button_done">Done</string>
     <string name="button_hint">Hint?</string>
     <string name="edit_view"></string>
+    <string name="menu_set">Set Sudoku</string>
+    <string name="menu_hint">Random Hint</string>
+    <string name="menu_solve">Solve Sudoku</string>
+    <string name="menu_restart">Clear Attempt</string>
+    <string name="menu_check">Check for Mistakes</string>
+    <string name="menu_checkloc">Check Where</string>
 
 </resources>

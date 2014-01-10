@@ -17,7 +17,7 @@ public class sudokuEdit extends Activity implements OnClickListener {
 		txt = (TextView) findViewById(R.id.textView1);
 		Intent intent = getIntent();
 		String[] data = intent.getStringArrayExtra("data");
-		final int pos = intent.getIntExtra("Position", 99);
+		final int pos = Integer.parseInt(intent.getStringExtra("pos"));
 		txt.setText(data[pos]);
 		
 		Button one = (Button) findViewById(R.id.button_1);
@@ -48,7 +48,7 @@ public class sudokuEdit extends Activity implements OnClickListener {
 			@Override
 			public void onClick(View v) {
 				Intent output = new Intent();
-				output.putExtra("new", txt.getText());
+				output.putExtra("new", txt.getText().toString());
 				output.putExtra("pos", pos);
 				setResult(Activity.RESULT_OK, output);
 				finish();
@@ -58,8 +58,9 @@ public class sudokuEdit extends Activity implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		Button btn = (Button) v.getParent();
-		String temp = (String) btn.getText();
+		int id = v.getId();
+		Button btn = (Button) findViewById(id);
+		String temp = btn.getText().toString();
 		txt.setText(temp);
 	}
 
