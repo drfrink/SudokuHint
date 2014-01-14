@@ -20,6 +20,7 @@ public class Sudoku {
 		attempt = stringify(matrix);
 		solveable = solveMatrix();
 		stringify();
+		//This is Sudoku Constructor, Starts all variables and confirms the sudoku is solvable.
 	}
 
 	private String[][] stringify(int[][] cells) {
@@ -88,19 +89,24 @@ public class Sudoku {
 
 	public String checkMatrix() {
 		int count = 0;
+		int lefttogo = 0;
 		String temp = "";
+		
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
-				if (attempt[i][j] != end[i][j] && attempt[i][j] != "Hint?"
-						&& attempt[i][j] != " ") {
+				if ((attempt[i][j].compareTo(end[i][j]))== 1 || (attempt[i][j].compareTo(" ")) == 1) {
 					count++;
+				} else if ((attempt[i][j].compareTo(" ")==0)) {
+					lefttogo++;
 				}
 			}
 		}
 		if (count != 0) {
 			temp = "So far you have " + String.valueOf(count) + " mistakes";
-		} else {
+		} else if (lefttogo != 0){
 			temp = "Nice, no mistakes so far";
+		}else if (count == 0 && lefttogo ==0){
+			temp = "You got the solution, Congrats!";
 		}
 		return temp;
 	}
@@ -111,11 +117,10 @@ public class Sudoku {
 		
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
-				if (attempt[i][j] != end[i][j] && attempt[i][j] != "Hint?"
-						&& attempt[i][j] != " ") {
+				if ((attempt[i][j].compareTo(end[i][j])) != 0) {
 					temp = (i+1) * (j+1);
 					datalist.add(temp);
-				}
+				} 
 			}
 		}
 		
@@ -134,7 +139,11 @@ public class Sudoku {
 		String result = new String();
 		
 		if (solveable) {
-			result = "Congrats, you got the solution";
+			result = "Alright, lets get started";
+			start = stringify(matrix);
+			attempt = stringify(matrix);
+			solveable = solveMatrix();
+			stringify();
 		}else {
 			result = "Sorry, this isn't right";
 		}
@@ -163,15 +172,21 @@ public class Sudoku {
 		return attempt[i][j];
 	}
 
-	public void hintMatrix() {
-		//create list of 0s mistakes are treated as 0s
-		//int x = pick random from list
-		//i = x/9;
-		//j = x%9;
-		//attempt[i][j] = end[i][j];
-		//stringify();
-		//intify();
-
+	public int[] hintMatrix() {
+		int data[] = checkWhere();
+		int y = data.length;
+		int z = (int) (Math.random() * y);
+		int x = data[z];
+		int i = x/9;
+		int j = x%9;
+		
+		attempt[i][j] = end[i][j];
+		stringify();
+		intify();
+		
+		int temp[] = {data[z]};
+		
+		return temp;
 	}
 
 	public void setMatrix(int x, String data) {

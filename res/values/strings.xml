@@ -16,12 +16,14 @@
     <string name="button_0"> </string>
     <string name="button_done">Done</string>
     <string name="button_hint">Hint?</string>
+    <string name="button_set">Set Sudoku</string>
+    <string name="button_clear">Clear Sudoku</string>
     <string name="edit_view"></string>
     <string name="menu_set">Set Sudoku</string>
     <string name="menu_hint">Random Hint</string>
     <string name="menu_solve">Solve Sudoku</string>
     <string name="menu_restart">Clear Attempt</string>
-    <string name="menu_check">Check for Mistakes</string>
-    <string name="menu_checkloc">Check Where</string>
+    <string name="menu_check">Check Progress</string>
+    <string name="menu_checkloc">Check What's Left</string>
 
 </resources>

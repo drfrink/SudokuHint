@@ -85,7 +85,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	@Override
 	public void onClick(View v) {
-		//TableRow tr = (TableRow) v.getParent();
 		Intent sudoku_edit = new Intent(this, sudokuEdit.class);
 		int buttonid = v.getId();
 		String but = Integer.toString(buttonid);
@@ -100,8 +99,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		if (requestCode == returndata) {
 			if (resultCode == RESULT_OK) {
 				String newNum = data.getStringExtra("new");
-				int pos = data.getExtras().getInt("pos");
-				if (newNum == "Hint?") {
+				int pos = Integer.parseInt(data.getStringExtra("pos"));
+				if (newNum.compareTo("Hint?") == 0) {
 					newNum = puzzle.hintMatrix(pos);
 				}
 				Button btn2 = (Button)table.findViewById(pos);
@@ -114,6 +113,15 @@ public class MainActivity extends Activity implements OnClickListener {
 				puzzle.setMatrix(newNums);
 				puzzle.stringify();
 				setBtn(puzzle.editListGetter());
+				String checkpossible = puzzle.attemptMatrix();
+				if (checkpossible.compareTo("Sorry, this isn't right")== 0) {
+					Toast.makeText(getApplicationContext(), checkpossible,
+							Toast.LENGTH_SHORT).show();
+					
+					Intent sudoku_set = new Intent(this,sudokuSet.class);
+					sudoku_set.putExtra("data", puzzle.editListGetter());
+					this.startActivityForResult(sudoku_set, setdata);
+				}
 			}
 		}
 
@@ -134,7 +142,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 		case R.id.menu_set:
 			Intent sudoku_set = new Intent(this,sudokuSet.class);
-			sudoku_set.putExtra("data",puzzle.editListGetter());
+			sudoku_set.putExtra("data", puzzle.editListGetter());
+			//sudoku_set.putExtra("data",puzzle.editListGetter());
 			this.startActivityForResult(sudoku_set,setdata);
 			break;
 		case R.id.menu_solve:
@@ -142,8 +151,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			setBtn(puzzle.editListGetter());
 			break;
 		case R.id.menu_hint:
-			puzzle.hintMatrix();
+			int[] high = puzzle.hintMatrix();
 			setBtn(puzzle.editListGetter());
+			btnHighlight(high);
 			break;
 		case R.id.menu_check:
 			String check = puzzle.checkMatrix();
@@ -161,20 +171,29 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 	
 	public void setBtn(String[] newdata) {
+		table = (TableLayout) findViewById(R.id.sudokuPuzzle);
 		for(int x=0;x<newdata.length;x++) {
 			int i = x/9;
 			int j = x%9;
-			table = (TableLayout) findViewById(R.id.sudokuPuzzle);
 			TableRow tr = (TableRow) table.getChildAt(i);
 			Button btn = (Button) tr.getChildAt(j);
 			btn.setText(newdata[x]);
 		}
-		
 		puzzle.setMatrix(newdata);
 	}
 	
 	public void btnHighlight(int[] cells) {
 		//Highlight button positions for 10 seconds
+	//	table = (TableLayout) findViewById(R.id.sudokuPuzzle);
+	//	for(int y=0;y<cells.length;y++) {
+		//	int x = cells[y];
+		//	int i = x/9;
+		//	int j = x%9;
+		//	TableRow tr = (TableRow) table.getChildAt(i);
+		//	Button btn = (Button) tr.getChildAt(j);
+		//	btn.setText(newdata[x]);
+		//}
+		//puzzle.setMatrix(newdata);
 	}
 
 }

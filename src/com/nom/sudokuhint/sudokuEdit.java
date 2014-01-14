@@ -49,7 +49,7 @@ public class sudokuEdit extends Activity implements OnClickListener {
 			public void onClick(View v) {
 				Intent output = new Intent();
 				output.putExtra("new", txt.getText().toString());
-				output.putExtra("pos", pos);
+				output.putExtra("pos", Integer.toString(pos));
 				setResult(Activity.RESULT_OK, output);
 				finish();
 			}
