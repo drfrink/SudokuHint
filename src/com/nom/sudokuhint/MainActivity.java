@@ -1,8 +1,13 @@
 package com.nom.sudokuhint;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
@@ -16,56 +21,31 @@ import android.widget.TableRow;
 import android.widget.Toast;
 import com.nom.sudokuhint.Sudoku;
 
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends Activity implements OnClickListener{
 
 	Sudoku puzzle = new Sudoku();
 	TableLayout table;
 	static final int returndata = 1;
 	static final int setdata = 2;
-
+	ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor();
+	HorizontalScrollView hScroll;
+	ScrollView vScroll;
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+	   outState.putParcelable("update", puzzle);
+	   super.onSaveInstanceState(outState);
+	   //outState.putString("message", "This is my message to be reloaded");
+	}
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		final HorizontalScrollView hScroll = (HorizontalScrollView) findViewById(R.id.scrollHorizontal);
-	    final ScrollView vScroll = (ScrollView) findViewById(R.id.scrollVertical);
-	    vScroll.setOnTouchListener(new View.OnTouchListener() { //inner scroll listener         
-	        @Override
-	        public boolean onTouch(View v, MotionEvent event) {
-	            return false;
-	        }
-	    });
-	    hScroll.setOnTouchListener(new View.OnTouchListener() { //outer scroll listener         
-	        private float mx, my, curX, curY;
-	        private boolean started = false;
-
-	        @Override
-	        public boolean onTouch(View v, MotionEvent event) {
-	            curX = event.getX();
-	            curY = event.getY();
-	            int dx = (int) (mx - curX);
-	            int dy = (int) (my - curY);
-	            switch (event.getAction()) {
-	                case MotionEvent.ACTION_MOVE:
-	                    if (started) {
-	                        vScroll.scrollBy(0, dy);
-	                        hScroll.scrollBy(dx, 0);
-	                    } else {
-	                        started = true;
-	                    }
-	                    mx = curX;
-	                    my = curY;
-	                    break;
-	                case MotionEvent.ACTION_UP: 
-	                    vScroll.scrollBy(0, dy);
-	                    hScroll.scrollBy(dx, 0);
-	                    started = false;
-	                    break;
-	            }
-	            return true;
-	        }
-	    });
 		table = (TableLayout) findViewById(R.id.sudokuPuzzle);
+		if(savedInstanceState != null) {
+			puzzle = savedInstanceState.getParcelable("update");
+		}
 		String[][] data = puzzle.attemptGetter();
 		int c = 0;
 		for (int row = 0; row < 9; row++) {
@@ -74,6 +54,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				Button currentButton = new Button(this);
 				currentButton.setId(c);
 				currentButton.setText(data[row][button]);
+				currentButton.setBackgroundResource(R.drawable.back);
 				currentButton.setOnClickListener(this);
 				currentRow.addView(currentButton);
 				c++;
@@ -81,7 +62,39 @@ public class MainActivity extends Activity implements OnClickListener {
 			currentRow.setId(row);
 			table.addView(currentRow);
 		}
+		hScroll = (HorizontalScrollView) findViewById(R.id.scrollHorizontal);
+		vScroll = (ScrollView) findViewById(R.id.scrollVertical);
 	}
+	
+	 @Override
+	 public boolean onTouchEvent(MotionEvent event) {
+	        float curX, curY, mx = 0 , my = 0;
+	        
+
+	        switch (event.getAction()) {
+
+	            case MotionEvent.ACTION_DOWN:
+	                mx = event.getX();
+	                my = event.getY();
+	                break;
+	            case MotionEvent.ACTION_MOVE:
+	                curX = event.getX();
+	                curY = event.getY();
+	                vScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+	                hScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+	                mx = curX;
+	                my = curY;
+	                break;
+	            case MotionEvent.ACTION_UP:
+	                curX = event.getX();
+	                curY = event.getY();
+	                vScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+	                hScroll.scrollBy((int) (mx - curX), (int) (my - curY));
+	                break;
+	        }
+
+	        return true;
+	    }
 
 	@Override
 	public void onClick(View v) {
@@ -103,8 +116,8 @@ public class MainActivity extends Activity implements OnClickListener {
 				if (newNum.compareTo("Hint?") == 0) {
 					newNum = puzzle.hintMatrix(pos);
 				}
-				Button btn2 = (Button)table.findViewById(pos);
-				btn2.setText(newNum);
+				Button btn = (Button)table.findViewById(pos);
+				btn.setText(newNum);
 				puzzle.setMatrix(pos, newNum);
 			} 
 		} else if (requestCode == setdata) {
@@ -121,6 +134,9 @@ public class MainActivity extends Activity implements OnClickListener {
 					Intent sudoku_set = new Intent(this,sudokuSet.class);
 					sudoku_set.putExtra("data", puzzle.editListGetter());
 					this.startActivityForResult(sudoku_set, setdata);
+				} else {
+					Toast.makeText(getApplicationContext(), checkpossible,
+							Toast.LENGTH_SHORT).show();
 				}
 			}
 		}
@@ -143,7 +159,6 @@ public class MainActivity extends Activity implements OnClickListener {
 		case R.id.menu_set:
 			Intent sudoku_set = new Intent(this,sudokuSet.class);
 			sudoku_set.putExtra("data", puzzle.editListGetter());
-			//sudoku_set.putExtra("data",puzzle.editListGetter());
 			this.startActivityForResult(sudoku_set,setdata);
 			break;
 		case R.id.menu_solve:
@@ -182,18 +197,45 @@ public class MainActivity extends Activity implements OnClickListener {
 		puzzle.setMatrix(newdata);
 	}
 	
-	public void btnHighlight(int[] cells) {
+	public void btnHighlight(final int[] cells) {
 		//Highlight button positions for 10 seconds
-	//	table = (TableLayout) findViewById(R.id.sudokuPuzzle);
-	//	for(int y=0;y<cells.length;y++) {
-		//	int x = cells[y];
-		//	int i = x/9;
-		//	int j = x%9;
-		//	TableRow tr = (TableRow) table.getChildAt(i);
-		//	Button btn = (Button) tr.getChildAt(j);
-		//	btn.setText(newdata[x]);
-		//}
-		//puzzle.setMatrix(newdata);
+	table = (TableLayout) findViewById(R.id.sudokuPuzzle);
+	for(int y=0;y<cells.length;y++) {
+		int x = cells[y];
+		int i = x/9;
+		int j = x%9;
+		TableRow tr = (TableRow) table.getChildAt(i);
+		Button btn = (Button) tr.getChildAt(j);
+		btn.setBackgroundResource(R.drawable.back2);
+		}
+	
+	Runnable task = new Runnable() {
+		@Override
+		public void run() {
+			Log.e("run", "this works?");
+			runOnUiThread(new Runnable() {
+				public void run() {
+				refresh(cells);
+				}
+			});
+			
+		}
+		
+	};
+	
+	worker.schedule(task, 10, TimeUnit.SECONDS);
+	
+	}
+	
+	public void refresh(int[] cells) {
+		for(int y=0;y<cells.length;y++) {
+			int x = cells[y];
+			int i = x/9;
+			int j = x%9;
+			TableRow tr = (TableRow) table.getChildAt(i);
+			Button btn = (Button) tr.getChildAt(j);
+			btn.setBackgroundResource(R.drawable.back);
+			}
 	}
 
 }

@@ -22,6 +22,27 @@ public class sudokuSet extends Activity implements OnClickListener{
 	TableLayout table;
 	
 	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		   String[] data = new String[81];
+		   for(int x=0;x<81;x++) {
+				int i = x/9;
+				int j = x%9;
+				TableRow tr = (TableRow) table.getChildAt(i);
+				EditText text = (EditText) tr.getChildAt(j);
+				String temp = text.getText().toString();
+				if(temp.compareTo("") == 0) {
+					temp = " ";
+				} else if (temp.compareTo(" ")!= 0) {
+				temp = temp.replaceAll("\\s+", "");
+				}
+				data[x] = temp;
+			}
+		   outState.putStringArray("update", data);
+		   super.onSaveInstanceState(outState);
+		   //outState.putString("message", "This is my message to be reloaded");
+		}
+	
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_set);
@@ -66,17 +87,22 @@ public class sudokuSet extends Activity implements OnClickListener{
 		table = (TableLayout) findViewById(R.id.newSudokuPuzzle);
 		Intent intent = getIntent();
 		String data[] = intent.getStringArrayExtra("data");
-		int c = 0;
+		if (savedInstanceState != null) {
+			data = savedInstanceState.getStringArray("update");
+		}
+		int c = 82;
 		for (int row = 0; row < 9; row++) {
 			TableRow currentRow = new TableRow(this);
 			for (int column = 0; column < 9; column++) {
 				EditText curEdit = new EditText(this);
 				curEdit.setId(c);
 				curEdit.setBackgroundResource(R.drawable.back);
-				curEdit.setText(data[c]);
+				curEdit.setText(data[c-82]);
 				curEdit.setFilters(new InputFilter[] {new InputFilter.LengthFilter(2)});
 				curEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
 				curEdit.setOnClickListener(this);
+				curEdit.setFocusable(true);
+				curEdit.setFocusableInTouchMode(true);
 				curEdit.setImeOptions(EditorInfo.IME_ACTION_NEXT);
 				currentRow.addView(curEdit);
 				c++;
@@ -84,62 +110,9 @@ public class sudokuSet extends Activity implements OnClickListener{
 			currentRow.setId(row);
 			table.addView(currentRow);
 		}
-		/*
-		//TableLayout actions = (TableLayout) findViewById(R.id.newSudokuBar);
-		TableRow currentRow = new TableRow(this);
-		Button setButton = new Button(this);
-		c++;
-		setButton.setId(c);
-		setButton.setText(R.string.button_set);
-		TableRow.LayoutParams params_set = (TableRow.LayoutParams) setButton.getLayoutParams();
-		params_set.span=4;
-		setButton.setLayoutParams(params_set);
-		Button clearButton = new Button(this);
-		c++;
-		clearButton.setId(c);
-		clearButton.setText(R.string.button_clear);
-		clearButton.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				table = (TableLayout) findViewById(R.id.newSudokuPuzzle);
-				for(int x=0;x<81;x++) {
-					int i = x/9;
-					int j = x%9;
-					TableRow tr = (TableRow) table.getChildAt(i);
-					EditText text = (EditText) tr.getChildAt(j);
-					text.setText(" ");
-				}
-			}
-		});
-		setButton.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Intent output = new Intent();
-				String data[] = new String[81];
-				table = (TableLayout) findViewById(R.id.newSudokuPuzzle);
-				for(int x=0;x<81;x++) {
-					int i = x/9;
-					int j = x%9;
-					TableRow tr = (TableRow) table.getChildAt(i);
-					EditText text = (EditText) tr.getChildAt(j);
-					data[x] = text.getText().toString();
-				}
-				output.putExtra("data", data);
-				setResult(Activity.RESULT_OK, output);
-			}
-		});
-		currentRow.addView(setButton);
-		currentRow.addView(clearButton);
-		currentRow.setId(9);
-		//actions.addView(currentRow);
-		table.setStretchAllColumns(true);/*
-		*/
 	}
 	@Override
 	public void onClick(View v) {
-		//TableRow tr = (TableRow) v.getParent();
 		EditText text = (EditText) v;
 		text.requestFocus();
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -150,13 +123,18 @@ public class sudokuSet extends Activity implements OnClickListener{
 	public void setButton(View v) {
 		Intent output = new Intent();
 		String data[] = new String[81];
-		//table = (TableLayout) findViewById(R.id.newSudokuPuzzle);
 		for(int x=0;x<81;x++) {
 			int i = x/9;
 			int j = x%9;
 			TableRow tr = (TableRow) table.getChildAt(i);
 			EditText text = (EditText) tr.getChildAt(j);
-			data[x] = text.getText().toString();
+			String temp = text.getText().toString();
+			if(temp.compareTo("") == 0) {
+				temp = " ";
+			} else if (temp.compareTo(" ")!= 0) {
+			temp = temp.replaceAll("\\s+", "");
+			}
+			data[x] = temp;
 		}
 		output.putExtra("newdata", data);
 		setResult(Activity.RESULT_OK, output);

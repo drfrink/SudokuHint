@@ -24,6 +24,6 @@
     <string name="menu_solve">Solve Sudoku</string>
     <string name="menu_restart">Clear Attempt</string>
     <string name="menu_check">Check Progress</string>
-    <string name="menu_checkloc">Check What's Left</string>
+    <string name="menu_checkloc">Check Whats Left</string>
 
 </resources>

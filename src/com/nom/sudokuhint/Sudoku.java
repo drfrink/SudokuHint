@@ -2,7 +2,10 @@ package com.nom.sudokuhint;
 
 import java.util.ArrayList;
 
-public class Sudoku {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Sudoku implements Parcelable {
 	private int matrix[][] = new int[][] {
 			{ 0, 0, 0, 0, 0, 0, 0, 6, 0 }, // evil level just to start
 			{ 8, 0, 2, 0, 0, 3, 0, 0, 0 }, { 6, 0, 0, 8, 9, 0, 0, 3, 0 },
@@ -13,6 +16,7 @@ public class Sudoku {
 	private String start[][] = new String[9][9];
 	private String end[][] = new String[9][9];
 	private String attempt[][] = new String[9][9];
+	private String check[][] = new String[9][9];
 	private String editList[] = new String[81];
 
 	public Sudoku() {
@@ -21,6 +25,15 @@ public class Sudoku {
 		solveable = solveMatrix();
 		stringify();
 		//This is Sudoku Constructor, Starts all variables and confirms the sudoku is solvable.
+	}
+	
+	public void readParcel(Parcel in) {
+		in.readStringArray(editList);
+		attempt = (String[][]) in.readSerializable();
+		check = (String[][]) in.readSerializable();
+		matrix = (int[][]) in.readSerializable();
+		end = (String[][]) in.readSerializable();
+		start = (String[][]) in.readSerializable();
 	}
 
 	private String[][] stringify(int[][] cells) {
@@ -118,9 +131,9 @@ public class Sudoku {
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
 				if ((attempt[i][j].compareTo(end[i][j])) != 0) {
-					temp = (i+1) * (j+1);
 					datalist.add(temp);
-				} 
+				}
+				temp ++;
 			}
 		}
 		
@@ -142,9 +155,13 @@ public class Sudoku {
 			result = "Alright, lets get started";
 			start = stringify(matrix);
 			attempt = stringify(matrix);
-			solveable = solveMatrix();
 			stringify();
 		}else {
+			fix();
+			start = stringify(matrix);
+			attempt = stringify(matrix);
+			solveable = solveMatrix();
+			stringify();
 			result = "Sorry, this isn't right";
 		}
 		
@@ -154,15 +171,25 @@ public class Sudoku {
 	private void intify() {
 		for(int i=0;i<9;i++) {
 			for(int j=0;j<9;j++) {
-				if(attempt[i][j] != " "){
+				if(attempt[i][j].compareTo(" ") != 0){
 					matrix[i][j] = Integer.parseInt(attempt[i][j]);
 				} else {
 					matrix[i][j] = 0;
 				}
 			}
 		}
-		
-		
+	}
+	
+	private void fix() {
+		for(int i=0;i<9;i++) {
+			for(int j=0;j<9;j++) {
+				if(attempt[i][j].compareTo(" ") != 0){
+					matrix[i][j] = Integer.parseInt(check[i][j]);
+				} else {
+					matrix[i][j] = 0;
+				}
+			}
+		}
 	}
 	
 	public String hintMatrix(int x) {
@@ -179,6 +206,7 @@ public class Sudoku {
 		int x = data[z];
 		int i = x/9;
 		int j = x%9;
+		
 		
 		attempt[i][j] = end[i][j];
 		stringify();
@@ -198,6 +226,12 @@ public class Sudoku {
 	
 	public void setMatrix(String[] data) {
 		int c = 0;
+		
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				check[i][j] = attempt[i][j];
+			}
+		}
 		
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
@@ -258,5 +292,21 @@ public class Sudoku {
 		}
 
 		return true;
+	}
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeStringArray(editList);
+		dest.writeSerializable(attempt);
+		dest.writeSerializable(check);
+		dest.writeSerializable(matrix);
+		dest.writeSerializable(end);
+		dest.writeSerializable(start);
 	}
 }
